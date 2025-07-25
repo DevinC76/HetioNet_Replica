@@ -1,11 +1,34 @@
-# hetio_cli.py
 import pandas as pd
-import pymongo
+from pymongo import MongoClient
+
 def load_databases():
     print("[INFO] Loading HetioNet data into databases...")
-    # TODO: Implement loading logic for MongoDB and Neo4j
-    # Example: load_nodes(), load_edges()
-    print("[INFO] Databases loaded successfully.")
+
+    # === Connect to MongoDB ===
+    try:
+        client = MongoClient("mongodb://localhost:27017/")
+        db = client["hetio_db"]
+        nodes_collection = db["nodes"]
+
+        # === Clear existing data ===
+        nodes_collection.delete_many({})
+        print("[INFO] Cleared existing documents in 'nodes' collection.")
+
+        # === Read nodes.tsv ===
+        df = pd.read_csv("nodes.tsv", sep="\t")
+        records = df.to_dict(orient="records")
+
+        if records:
+            nodes_collection.insert_many(records)
+            print(f"[INFO] Successfully inserted {len(records)} nodes into MongoDB.")
+        else:
+            print("[WARN] nodes.tsv is empty.")
+
+    except Exception as e:
+        print(f"[ERROR] Failed to load data into MongoDB: {e}")
+
+    print("[INFO] MongoDB node loading complete.")
+    input("Press Enter to return to the main menu...")
 
 
 def run_query_1():
