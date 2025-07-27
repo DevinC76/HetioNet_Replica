@@ -1,11 +1,36 @@
 # hetio_cli.py
 import pandas as pd
 from pymongo import MongoClient
-def load_databases():
+from neo4j import GraphDatabase
+
+
+# Loading nodes.tsv and edges.tsv into MongoDB and Neo4j
+def load_databases(m_db):
     print("[INFO] Loading HetioNet data into databases...")
-    # TODO: Implement loading logic for MongoDB and Neo4j
-    # Example: load_nodes(), load_edges()
-    print("[INFO] Databases loaded successfully.")
+
+    # === Connect to MongoDB ===
+    try:
+        nodes_collection = m_db["nodes"]
+
+        # === Clear existing data ===
+        nodes_collection.delete_many({})
+        print("[INFO] Cleared existing documents in 'nodes' collection.")
+
+        # === Read nodes.tsv ===
+        df = pd.read_csv("Data/nodes.tsv", sep="\t")
+        records = df.to_dict(orient="records")
+
+        if records:
+            nodes_collection.insert_many(records)
+            print(f"[INFO] Successfully inserted {len(records)} nodes into MongoDB.")
+        else:
+            print("[WARN] nodes.tsv is empty.")
+
+    except Exception as e:
+        print(f"[ERROR] Failed to load data into MongoDB: {e}")
+
+    print("[INFO] MongoDB node loading complete.")
+    input("Press Enter to return to the main menu...")
 
 
 def run_query_1():
@@ -25,6 +50,12 @@ def run_query_2():
 
 
 def main():
+    try:
+        client = MongoClient()
+        m_db = client["hetio_db"]
+    except Exception as e:
+        print(f"[ERROR] Could not connect to MongoDB: {e}")
+        return
     while True:
         print("\n========== HetioNet Database System ==========")
         print("1. Load Database")
@@ -35,16 +66,16 @@ def main():
         choice = input("Enter your choice (1–4): ").strip()
 
         if choice == '1':
-            load_databases()
+            load_databases(m_db)
         elif choice == '2':
-            run_query_1()
+            run_query_1(m_db)
         elif choice == '3':
             run_query_2()
         elif choice == '4':
             print("Exiting HetioNet system. Goodbye.")
             break
         else:
-            print("Invalid input. Please choose a number from 1 to 4.")
+            print("Invalid input. Please choose from 1 to 4.")
 
 if __name__ == "__main__":
     main()
