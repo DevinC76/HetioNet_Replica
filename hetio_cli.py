@@ -1,13 +1,11 @@
 import pandas as pd
 from pymongo import MongoClient
 
-def load_databases():
+def load_databases(db):
     print("[INFO] Loading HetioNet data into databases...")
 
     # === Connect to MongoDB ===
     try:
-        client = MongoClient("mongodb://localhost:27017/")
-        db = client["hetio_db"]
         nodes_collection = db["nodes"]
 
         # === Clear existing data ===
@@ -31,13 +29,25 @@ def load_databases():
     input("Press Enter to return to the main menu...")
 
 
-def run_query_1():
+def run_query_1(db):
     disease_id = input("Enter Disease ID (e.g., Disease::DOID:263): ").strip()
+    print(disease_id)
     print(f"[INFO] Running Query 1 for {disease_id}...")
-    # TODO: Implement query using Neo4j and/or MongoDB
-    # Example: get_disease_info(disease_id)
-    print("[INFO] Query 1 results:")
-    # print(result)
+
+    nodes_collection = db["nodes"]
+    if not "Disease" in disease_id:
+        print("[ERROR] Invalid Disease ID format or none Disease. Please use 'Disease::DOID:XXXX'.")
+        return
+    # Use the appropriate query field — adjust if needed
+    result = nodes_collection.find_one({"id": disease_id})
+
+    if result:
+        print("[INFO] Query 1 result found:")
+        print(result)
+        aosdiifa = input()
+    else:
+        print("[WARNING] No record found for the given Disease ID.")
+
 
 
 def run_query_2():
@@ -48,23 +58,29 @@ def run_query_2():
 
 
 def main():
+    try:
+        client = MongoClient("mongodb://localhost:27017/")
+        db = client["hetio_db"]
+    except Exception as e:
+        print(f"[ERROR] Could not connect to MongoDB: {e}")
+        return
     while True:
         print("\n========== HetioNet Database System ==========")
         print("1. Load Database")
-        print("2. Run Query 1 - Disease info and related drugs/genes/locations")
+        print("2. Disease info and related drugs/genes/locations")
         print("3. Run Query 2 - Discover new compound treatments")
         print("4. Exit")
         print("==============================================")
         choice = input("Enter your choice (1–4): ").strip()
 
         if choice == '1':
-            load_databases()
+            load_databases(db)
         elif choice == '2':
-            run_query_1()
+            run_query_1(db)
         elif choice == '3':
             run_query_2()
         elif choice == '4':
-            print("Exiting HetioNet system. Goodbye.")
+            print("Exiting HetioNet system")
             break
         else:
             print("Invalid input. Please choose a number from 1 to 4.")
