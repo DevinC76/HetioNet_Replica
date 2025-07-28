@@ -23,9 +23,9 @@ Neo4j requires you to manually create a database. You can do this via the Neo4j 
 ---
 
 # Running the Project
-
+```
 python hetio_cli.py
-
+```
 ---
 
 # Queries
