@@ -105,12 +105,12 @@ def query_disease_info(n_db):
                 anatomies = ', '.join(sorted([anat.title() for anat in record['anatomies']])) if record['anatomies'] else 'None'
 
                 print("[INFO] Disease Information:")
-                print(f"Name        : {disease_name}")
-                print(f"Drugs       : {drugs}")
-                print(f"Genes       : {genes}")
+                print(f"Name        : {disease_name}\n")
+                print(f"Drugs       : {drugs}\n")
+                print(f"Genes       : {genes}\n")
                 print(f"Occurs In   : {anatomies}")
             else:
-                print("[WARN] No disease found with the given ID.")
+                print("[WARN] No disease found with the given ID.\n")
 
     except Exception as e:
         print(f"[ERROR] Failed to query disease info: {e}")
@@ -180,9 +180,10 @@ def main():
         print("1. Load Database")
         print("2. Info and related drugs/genes/locations")
         print("3. Discover new compound treatments")
-        print("4. Exit")
+        print("4. Run Spark Queries (Q1–Q3)")
+        print("5. Exit")
         print("==============================================")
-        choice = input("Enter 1–4): ").strip()
+        choice = input("Enter 1–5): ").strip()
         print("\n")
         if choice == '1':
             load_databases(mongo_db,neo_db)
@@ -191,6 +192,9 @@ def main():
         elif choice == '3':
             new_treatment(neo_db)
         elif choice == '4':
+            from spark import run_spark
+            run_spark()
+        elif choice == '5':
             neo_db.close()
             break
         else:
